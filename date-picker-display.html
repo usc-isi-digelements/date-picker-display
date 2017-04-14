@@ -1,0 +1,394 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-date-picker/paper-date-picker.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/shadow.html">
+<link rel="import" href="../lodash-import/lodash.html">
+<link rel="import" href="../moment-element/moment-with-locales-import.html">
+
+<!--
+A Polymer Element that displays a date picker used for filtering (uses paper-date-picker).
+
+Example:
+```html
+    <date-picker-display
+      facet-selection="{{facetSelection}}"
+      key="[[dateKey]]"
+      title="[[dateTitle]]"
+      prefix-label="[[datePrefixLabel]]"
+      date-identifier="[[dateIdentifier]]">
+    </date-picker-display>
+```
+
+### Styling
+
+`<date-picker-display>` provides the following custom properties and mixins
+for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--date-select-bg-color` | Background color for the date selection buttons | --paper-blue-grey-200
+`--date-select-text-color` | Text color for date selection buttons | --paper-blue-grey-800
+
+To style the popup with the date picker, use the styling options supported by Polymer.PaperDialogBehavior.
+
+@demo demo/index.html
+-->
+
+<dom-module id="date-picker-display">
+  <template>
+    <style include="iron-flex"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      iron-icon {
+        --iron-icon-height: 18px;
+        --iron-icon-width: 18px;
+        padding-bottom: 1px;
+        padding-right: 5px;
+      }
+      paper-button.date-select {
+        @apply(--shadow-elevation-4dp);
+        margin: 0;
+        padding: 8px;
+        text-transform: none;
+        background-color: var(--date-select-bg-color, --paper-blue-grey-200);
+        color: var(--date-select-text-color, --paper-blue-grey-800);
+        vertical-align: middle;
+        justify-content: flex-start;
+      }
+      paper-button.date-select:hover {
+        @apply(--shadow-elevation-8dp);
+      }
+      .h-divider {
+        height: 10px;
+      }
+    </style>
+    <div class="horizontal layout">
+      <paper-button class="date-select flex-auto" on-tap="_openDateDialog">
+        <iron-icon icon="icons:date-range"></iron-icon>
+        <span>{{_buttonLabel}}</span>
+      </paper-button>
+      <paper-dialog id="dateDialog" class="paper-date-picker-dialog" modal on-iron-overlay-closed="_closeDateDialog">
+        <paper-date-picker id="datePicker" heading-format="MMMM Do" force-narrow></paper-date-picker>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm>OK</paper-button>
+        </div>
+      </paper-dialog>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'date-picker-display',
+
+      properties: {
+        /**
+         * (Output)
+         *
+         * Date object for the filter.
+         *
+         * @type {Date}
+         * @default null
+         */
+        date: {
+          type: Date,
+          value: null,
+          notify: true
+        },
+        /**
+         * (Optional)
+         *
+         * Format for date stored in facetSelection
+         *
+         * @type {String}
+         * @default 'MM/DD/YYYY'
+         */
+        facetLabelFormat: {
+          type: String,
+          value: 'MM/DD/YYYY'
+        },
+        /**
+         * (Optional)
+         *
+         * Contains state of date facets to persist selection state between queries.
+         *
+         * @type {Object}
+         * @default {}
+         */
+        facetSelection: {
+          type: Object,
+          value: function() {
+            return {};
+          },
+          notify: true
+        },
+        /**
+         * (Required)
+         *
+         * Unique identifier in facetSelection for date object
+         *
+         * @type {String}
+         */
+        key: {
+          type: String
+        },
+        /**
+         * (Required)
+         *
+         * Title as it should appear in facetSelection
+         *
+         * @type {String}
+         */
+        title: {
+          type: String
+        },
+        /**
+         * (Required)
+         *
+         * Prefix to use for label (e.g. "From" or "To")
+         *
+         * @type {String}
+         */
+        prefixLabel: {
+          type: String
+        },
+        /**
+         * (Required)
+         *
+         * Date identifier (e.g. "begin" or "end")
+         *
+         * @type {String}
+         */
+        dateIdentifier: {
+          type: String
+        },
+        /**
+         * (Optional)
+         *
+         * Facet structure to use. If function is left as default, facet structure will be as follows:
+         * {
+         *   key: this.key
+         *   text: this.formatDate(this.date, this.facetLabelFormat) (ex: '04/04/2017')
+         *   date: this.formatDateToESString(date) (ex: '2017-04-04T00:00:00')
+         *   enabled: true
+         *   category: this.title
+         * }
+         *
+         * If this is changed, note that the facetSelectionDateProperty (default: 'date') and
+         * facetSelectionEnabledProperty (default: 'enabled') are required values.
+         *
+         * @type {Object}
+         * @default {{getObject: Function}}
+         */
+        dateFacetStructure: {
+          type: Object,
+          value: function() {
+            return {
+              getObject: function(self) {
+                var objectToReturn = {};
+                objectToReturn.key = self.key;
+                objectToReturn.text = self.formatDate(self.date, self.facetLabelFormat);
+                objectToReturn[self.facetSelectionDateProperty] = self.formatDateToESString(self.date);
+                objectToReturn[self.facetSelectionEnabledProperty] = true;
+                objectToReturn.category = self.title;
+                return objectToReturn;
+              }
+            };
+          }
+        },
+        /**
+         * (Optional)
+         *
+         * Name of function in dateFacetStructure.
+         *
+         * @type {String}
+         * @default 'getObject'
+         */
+        functionProperty: {
+          type: String,
+          value: 'getObject'
+        },
+        /**
+         * (Optional)
+         *
+         * Name of the date property in the facetSelection object.
+         *
+         * @type {String}
+         * @default 'date'
+         */
+        facetSelectionDateProperty: {
+          type: String,
+          value: 'date'
+        },
+        /**
+         * (Optional)
+         *
+         * Name of the enabled property in the facetSelection object.
+         *
+         * @type {String}
+         * @default 'enabled'
+         */
+        facetSelectionEnabledProperty: {
+          type: String,
+          value: 'enabled'
+        },
+        /**
+         * (Output)
+         *
+         * Label for current date to use on date picker button
+         *
+         * @private
+         */
+        _buttonLabel: {
+          computed: '_computeLabel(prefixLabel, dateIdentifier, date)'
+        }
+      },
+      observers: [
+        '_updateDisplay(facetSelection.*)'
+      ],
+      /**
+       * Creates a string representation of a date to use to query
+       * elasticsearch (ex: '2016-08-02T00:00:00')
+       *
+       * @param {Date} date
+       * @return {String} date as string
+       */
+      formatDateToESString: function(date) {
+        return moment(date).format('YYYY-MM-DD') + 'T00:00:00';
+      },
+      /**
+       * Formats date as string according to format parameter.
+       *
+       * @param {Date} date
+       * @param {String} format
+       * @return {String} date as string
+       */
+      formatDate: function(date, format) {
+        return moment(date).format(format);
+      },
+      /**
+       * Creates a string representation of a date to display back to the
+       * user in the following format: August 2, 2016
+       *
+       * @param {String} prefixLabel (e.g. "From" or "To")
+       * @param {String} dateIdentifier (e.g. "begin" or "end")
+       * @param {Date} date
+       * @return {String} label to display, empty string if no date exists
+       * @private
+       */
+      _computeLabel: function(prefixLabel, dateIdentifier, date) {
+        if(date) {
+          return prefixLabel + ': ' + this.formatDate(date, 'LL');
+        } else {
+          return 'Click to set ' + dateIdentifier + ' date';
+        }
+      },
+      /**
+       * Updates the facetSelection object to indicate a selected filter
+       * based on the parameters. Will call the function specfied in 
+       * dateFacetStructure in order to do this.
+       *
+       * @param {String} key - identifier to use in facetSelection object       
+       * @private
+       */
+      _updateFacetSelection: function(key) {
+        var self = this;
+
+        var newFacetSelectionObject = this.dateFacetStructure[self.functionProperty](self);
+
+        // ensure required properties are specified
+        if(newFacetSelectionObject[self.facetSelectionEnabledProperty] === undefined) {
+          newFacetSelectionObject[self.facetSelectionEnabledProperty] = true;
+        }
+
+        if(newFacetSelectionObject[self.facetSelectionDateProperty] === undefined) {
+          newFacetSelectionObject[self.facetSelectionDateProperty] = self.formatDateToESString(self.date);
+        }
+
+        this.facetSelection[key] = newFacetSelectionObject;
+
+        this.notifyPath('facetSelection.*', newFacetSelectionObject);
+      },
+      /**
+       * Check if two dates are equal based on their elasticsearch string represetations.
+       *
+       * @param {Date} dateA
+       * @param {Date} dateB
+       * @return {Boolean}
+       * @private
+       */
+      _checkDateEquality: function(dateA, dateB) {
+        return this.formatDateToESString(dateA) === this.formatDateToESString(dateB);
+      },
+      /**
+       * Shows date picker in order to select a date
+       *
+       * @private
+       */
+      _openDateDialog: function() {
+        this.$.dateDialog.toggle();
+      },
+      /**
+       * Closes the date picker used to select a date. If a date
+       * is confirmed and it is different from the previous date,
+       * update date accordingly.
+       *
+       * @event iron-overlay-closed
+       * @private
+       */
+      _closeDateDialog: function(event) {
+        if(event.detail.confirmed) {
+          var newDate = this.$.datePicker.date;
+
+          if(this.date && this._checkDateEquality(this.date, newDate)) {
+            return;
+          }
+
+          this.date = newDate;
+          if(this.date) {
+            this._updateFacetSelection(this.key);
+          }
+        }
+      },
+      /**
+       * When facet selection changes, ensure date object is updated if needed.
+       *
+       * @private
+       */
+      _updateDisplay: function() {
+        if(_.isEqual(this.facetSelection, {}) || this.facetSelection[this.key] === undefined || _.isEqual(this.facetSelection[this.key], {}) || this.facetSelection[this.key][this.facetSelectionEnabledProperty] === false) {
+          if(this.date !== null) {
+            this.date = null;
+          }
+          return;
+        }
+
+        this.date = moment(this.facetSelection[this.key][this.facetSelectionDateProperty]).toDate();
+        this.$.datePicker.date = moment(this.facetSelection[this.key][this.facetSelectionDateProperty]).toDate();
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,75 @@
+<!--
+Copyright 2017 Next Century Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+  <link rel="import" href="../date-picker-display.html">
+  <link rel="import" href="../../selected-facets-display/selected-facets-display.html">
+
+</head>
+
+<body unresolved>
+  <template is="dom-bind" id="demo">
+    <div>
+      <p>date-picker-display demo (used along with selected-facets-display):</p>
+
+      <p>Key: 'dates'</p>
+      <p>Identifier: 'this'</p>
+      <p>Title: 'Date'</p>
+      <p>Prefix Label: 'Date'</p>
+
+      <p>Selected Facets:
+      <span>{{displayEmpty(facetSelection.*)}}</span>
+      <selected-facets-display
+        facet-selection="{{facetSelection}}">
+      </selected-facets-display></p>
+
+      <br/><br/>
+
+      <date-picker-display
+        style="width: 200px;"
+        facet-selection="{{facetSelection}}"
+        key="[[dateKey]]"
+        title="[[dateTitle]]"
+        prefix-label="[[datePrefixLabel]]"
+        date-identifier="[[dateIdentifier]]">
+      </date-picker-display>
+    </div>
+  </template>
+  <script>
+    (function(document) {
+      var demo = document.querySelector('#demo');
+
+      demo.facetSelection = {};
+      demo.dateKey = 'dates';
+      demo.dateIdentifier = 'this';
+      demo.dateTitle = 'Date';
+      demo.datePrefixLabel = 'Date';
+
+      demo.displayEmpty = function() {
+        if(!Object.keys(demo.facetSelection).length ||
+          (demo.facetSelection[demo.dateKey] && !demo.facetSelection[demo.dateKey].enabled)) {
+          return 'None';
+        }
+      };
+
+    })(document);
+  </script>
+</body>
+</html>
