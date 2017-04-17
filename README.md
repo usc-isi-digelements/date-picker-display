@@ -23,3 +23,17 @@ Custom property | Description | Default
 `--date-select-text-color` | Text color for date selection buttons | --paper-blue-grey-800
 
 To style the date picker popup, use the styling options supported by [Polymer.PaperDialogBehavior](https://github.com/PolymerElements/paper-dialog-behavior/).
+
+### Dependencies
+
+Dependencies are installed using [Bower](http://bower.io/):
+
+    npm install -g bower
+    bower install
+
+### Testing
+
+Tests are run using [web-component-tester](https://github.com/Polymer/web-component-tester):
+
+    npm install -g web-component-tester
+    wct

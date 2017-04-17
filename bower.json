@@ -1,7 +1,7 @@
 {
   "name": "date-picker-display",
   "description": "A Polymer Element that displays a date picker used for filtering (uses paper-date-picker).",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "authors": [
     "Next Century Corporation"
   ],
