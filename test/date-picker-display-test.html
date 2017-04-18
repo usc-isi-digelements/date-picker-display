@@ -54,8 +54,7 @@ limitations under the License.
       assert.equal(element.prefixLabel, 'From');
       assert.equal(element.dateIdentifier, 'begin');
       assert.equal(element.title, 'Begin Date');
-      assert.isObject(element.dateFacetStructure);
-      assert.equal(element.functionProperty, 'getObject');
+      assert.isFunction(element.dateFacetStructure);
       assert.equal(element.facetSelectionDateProperty, 'date');
       assert.equal(element.facetSelectionEnabledProperty, 'enabled');
       assert.equal(element._buttonLabel, 'Click to set begin date');
@@ -115,12 +114,10 @@ limitations under the License.
       element.title = 'End Date';
       element.functionProperty = 'test';
 
-      element.dateFacetStructure = {
-        test: function(self) {
-          var objectToReturn = {};
-          objectToReturn.key = self.key;
-          return objectToReturn;
-        }
+      element.dateFacetStructure = function() {
+        var objectToReturn = {};
+        objectToReturn.key = this.key;
+        return objectToReturn;
       };
 
       element._updateFacetSelection('endDate');

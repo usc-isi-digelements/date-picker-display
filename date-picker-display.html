@@ -189,47 +189,34 @@ To style the popup with the date picker, use the styling options supported by Po
          * (Optional)
          *
          * Facet structure to use. If function is left as default, facet structure will be as follows:
-         * {
-         *   key: this.key
-         *   text: this.formatDate(this.date, this.facetLabelFormat) (ex: '04/04/2017')
-         *   date: this.formatDateToESString(date) (ex: '2017-04-04T00:00:00')
-         *   enabled: true
-         *   category: this.title
+         *
+         * {<br/>
+         *   &nbsp;&nbsp;&nbsp;&nbsp;key: this.key,<br/>
+         *   &nbsp;&nbsp;&nbsp;&nbsp;text: this.formatDate(this.date, this.facetLabelFormat) (ex: '04/04/2017'),<br/>
+         *   &nbsp;&nbsp;&nbsp;&nbsp;date: this.formatDateToESString(date) (ex: '2017-04-04T00:00:00'),<br/>
+         *   &nbsp;&nbsp;&nbsp;&nbsp;enabled: true,<br/>
+         *   &nbsp;&nbsp;&nbsp;&nbsp;category: this.title<br/>
          * }
          *
          * If this is changed, note that the facetSelectionDateProperty (default: 'date') and
-         * facetSelectionEnabledProperty (default: 'enabled') are required values.
+         * facetSelectionEnabledProperty (default: 'enabled') are required values in this component.
          *
          * @type {Object}
-         * @default {{getObject: Function}}
+         * @default {{Function()}}
          */
         dateFacetStructure: {
           type: Object,
           value: function() {
-            return {
-              getObject: function(self) {
-                var objectToReturn = {};
-                objectToReturn.key = self.key;
-                objectToReturn.text = self.formatDate(self.date, self.facetLabelFormat);
-                objectToReturn[self.facetSelectionDateProperty] = self.formatDateToESString(self.date);
-                objectToReturn[self.facetSelectionEnabledProperty] = true;
-                objectToReturn.category = self.title;
-                return objectToReturn;
-              }
+            return function() {
+              var objectToReturn = {};
+              objectToReturn.key = this.key;
+              objectToReturn.text = this.formatDate(this.date, this.facetLabelFormat);
+              objectToReturn[this.facetSelectionDateProperty] = this.formatDateToESString(this.date);
+              objectToReturn[this.facetSelectionEnabledProperty] = true;
+              objectToReturn.category = this.title;
+              return objectToReturn;
             };
           }
-        },
-        /**
-         * (Optional)
-         *
-         * Name of function in dateFacetStructure.
-         *
-         * @type {String}
-         * @default 'getObject'
-         */
-        functionProperty: {
-          type: String,
-          value: 'getObject'
         },
         /**
          * (Optional)
@@ -317,7 +304,7 @@ To style the popup with the date picker, use the styling options supported by Po
       _updateFacetSelection: function(key) {
         var self = this;
 
-        var newFacetSelectionObject = this.dateFacetStructure[self.functionProperty](self);
+        var newFacetSelectionObject = this.dateFacetStructure();
 
         // ensure required properties are specified
         if(newFacetSelectionObject[self.facetSelectionEnabledProperty] === undefined) {
