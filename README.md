@@ -2,15 +2,25 @@
 
 A Polymer Element that displays a date picker used for filtering (uses paper-date-picker).
 
-Example:
+### Example
+```js
+var facets = {
+  dates: {
+    dateStart: {},
+    dateEnd: {}
+  }
+};
+```
+
 ```html
-    <date-picker-display
-      facet-selection="{{facetSelection}}"
-      key="[[dateKey]]"
-      title="[[dateTitle]]"
-      prefix-label="[[datePrefixLabel]]"
-      date-identifier="[[dateIdentifier]]">
-    </date-picker-display>
+<date-picker-display
+  facet-key="dates"
+  facets="{{facets}}"
+  key="dateStart"
+  title="Date From"
+  prefix-label="From"
+  date-identifier="start">
+</date-picker-display>
 ```
 
 ### Styling

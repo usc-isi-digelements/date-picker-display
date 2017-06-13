@@ -29,15 +29,25 @@ limitations under the License.
 <!--
 A Polymer Element that displays a date picker used for filtering (uses paper-date-picker).
 
-Example:
+### Example
+```js
+var facets = {
+  dates: {
+    dateStart: {},
+    dateEnd: {}
+  }
+};
+```
+
 ```html
-    <date-picker-display
-      facet-selection="{{facetSelection}}"
-      key="[[dateKey]]"
-      title="[[dateTitle]]"
-      prefix-label="[[datePrefixLabel]]"
-      date-identifier="[[dateIdentifier]]">
-    </date-picker-display>
+<date-picker-display
+  facet-key="dates"
+  facets="{{facets}}"
+  key="dateStart"
+  title="Date From"
+  prefix-label="From"
+  date-identifier="start">
+</date-picker-display>
 ```
 
 ### Styling
@@ -88,7 +98,7 @@ To style the popup with the date picker, use the styling options supported by Po
     <div class="horizontal layout">
       <paper-button class="date-select flex-auto" on-tap="_openDateDialog">
         <iron-icon icon="icons:date-range"></iron-icon>
-        <span>{{_buttonLabel}}</span>
+        <span>[[_buttonLabel]]</span>
       </paper-button>
       <paper-dialog id="dateDialog" class="paper-date-picker-dialog" modal on-iron-overlay-closed="_closeDateDialog">
         <paper-date-picker id="datePicker" heading-format="MMMM Do" force-narrow></paper-date-picker>
@@ -118,10 +128,22 @@ To style the popup with the date picker, use the styling options supported by Po
           value: null,
           notify: true
         },
+
+        /**
+         * (Required)
+         *
+         * A key in `facets`.
+         *
+         * @type {String}
+         */
+        facetKey: {
+          type: String
+        },
+
         /**
          * (Optional)
          *
-         * Format for date stored in facetSelection
+         * Format for date stored in facets[facetKey]
          *
          * @type {String}
          * @default 'MM/DD/YYYY'
@@ -130,41 +152,45 @@ To style the popup with the date picker, use the styling options supported by Po
           type: String,
           value: 'MM/DD/YYYY'
         },
+
         /**
          * (Optional)
          *
-         * Contains state of date facets to persist selection state between queries.
+         * Keys mapped to facet objects that persist selection state between queries.
          *
          * @type {Object}
          * @default {}
          */
-        facetSelection: {
+        facets: {
+          notify: true,
           type: Object,
           value: function() {
             return {};
-          },
-          notify: true
+          }
         },
+
         /**
          * (Required)
          *
-         * Unique identifier in facetSelection for date object
+         * Unique identifier in facets[facetKey] for date object
          *
          * @type {String}
          */
         key: {
           type: String
         },
+
         /**
          * (Required)
          *
-         * Title as it should appear in facetSelection
+         * Title as it should appear in facets[facetKey]
          *
          * @type {String}
          */
         title: {
           type: String
         },
+
         /**
          * (Required)
          *
@@ -175,6 +201,7 @@ To style the popup with the date picker, use the styling options supported by Po
         prefixLabel: {
           type: String
         },
+
         /**
          * (Required)
          *
@@ -185,6 +212,7 @@ To style the popup with the date picker, use the styling options supported by Po
         dateIdentifier: {
           type: String
         },
+
         /**
          * (Optional)
          *
@@ -218,10 +246,11 @@ To style the popup with the date picker, use the styling options supported by Po
             };
           }
         },
+
         /**
          * (Optional)
          *
-         * Name of the date property in the facetSelection object.
+         * Name of the date property in the facets[facetKey] object.
          *
          * @type {String}
          * @default 'date'
@@ -230,10 +259,11 @@ To style the popup with the date picker, use the styling options supported by Po
           type: String,
           value: 'date'
         },
+
         /**
          * (Optional)
          *
-         * Name of the enabled property in the facetSelection object.
+         * Name of the enabled property in the facets[facetKey] object.
          *
          * @type {String}
          * @default 'enabled'
@@ -242,6 +272,7 @@ To style the popup with the date picker, use the styling options supported by Po
           type: String,
           value: 'enabled'
         },
+
         /**
          * (Output)
          *
@@ -253,9 +284,11 @@ To style the popup with the date picker, use the styling options supported by Po
           computed: '_computeLabel(prefixLabel, dateIdentifier, date)'
         }
       },
+
       observers: [
-        '_updateDisplay(facetSelection.*)'
+        '_updateDisplay(key, facetKey, facets.*)'
       ],
+
       /**
        * Creates a string representation of a date to use to query
        * elasticsearch (ex: '2016-08-02T00:00:00')
@@ -266,6 +299,7 @@ To style the popup with the date picker, use the styling options supported by Po
       formatDateToESString: function(date) {
         return moment(date).format('YYYY-MM-DD') + 'T00:00:00';
       },
+
       /**
        * Formats date as string according to format parameter.
        *
@@ -276,6 +310,7 @@ To style the popup with the date picker, use the styling options supported by Po
       formatDate: function(date, format) {
         return moment(date).format(format);
       },
+
       /**
        * Creates a string representation of a date to display back to the
        * user in the following format: August 2, 2016
@@ -293,12 +328,13 @@ To style the popup with the date picker, use the styling options supported by Po
           return 'Click to set ' + dateIdentifier + ' date';
         }
       },
+
       /**
-       * Updates the facetSelection object to indicate a selected filter
+       * Updates the facets object to indicate a selected filter
        * based on the parameters. Will call the function specfied in 
        * dateFacetStructure in order to do this.
        *
-       * @param {String} key - identifier to use in facetSelection object       
+       * @param {String} key - identifier to use in facets object
        * @private
        */
       _updateFacetSelection: function(key) {
@@ -315,10 +351,12 @@ To style the popup with the date picker, use the styling options supported by Po
           newFacetSelectionObject[self.facetSelectionDateProperty] = self.formatDateToESString(self.date);
         }
 
-        this.facetSelection[key] = newFacetSelectionObject;
+        this.facets[this.facetKey] = this.facets[this.facetKey] || {};
+        this.facets[this.facetKey][key] = newFacetSelectionObject;
 
-        this.notifyPath('facetSelection.*', newFacetSelectionObject);
+        this.notifyPath(['facets', this.facetKey, '*'], newFacetSelectionObject);
       },
+
       /**
        * Check if two dates are equal based on their elasticsearch string represetations.
        *
@@ -330,6 +368,7 @@ To style the popup with the date picker, use the styling options supported by Po
       _checkDateEquality: function(dateA, dateB) {
         return this.formatDateToESString(dateA) === this.formatDateToESString(dateB);
       },
+
       /**
        * Shows date picker in order to select a date
        *
@@ -338,6 +377,7 @@ To style the popup with the date picker, use the styling options supported by Po
       _openDateDialog: function() {
         this.$.dateDialog.toggle();
       },
+
       /**
        * Closes the date picker used to select a date. If a date
        * is confirmed and it is different from the previous date,
@@ -360,21 +400,29 @@ To style the popup with the date picker, use the styling options supported by Po
           }
         }
       },
+
       /**
        * When facet selection changes, ensure date object is updated if needed.
        *
        * @private
        */
       _updateDisplay: function() {
-        if(_.isEqual(this.facetSelection, {}) || this.facetSelection[this.key] === undefined || _.isEqual(this.facetSelection[this.key], {}) || this.facetSelection[this.key][this.facetSelectionEnabledProperty] === false) {
-          if(this.date !== null) {
+        var facetSelection = this.facets[this.facetKey];
+        // TODO Do we need to specifically check for undefined and false?  If so, add a comment.
+        if(!facetSelection ||
+            _.isEqual(facetSelection, {}) ||
+            facetSelection[this.key] === undefined ||
+            _.isEqual(facetSelection[this.key], {}) ||
+            facetSelection[this.key][this.facetSelectionEnabledProperty] === false) {
+
+          if(this.key && this.facetKey && this.date !== null) {
             this.date = null;
           }
           return;
         }
 
-        this.date = moment(this.facetSelection[this.key][this.facetSelectionDateProperty]).toDate();
-        this.$.datePicker.date = moment(this.facetSelection[this.key][this.facetSelectionDateProperty]).toDate();
+        this.date = moment(facetSelection[this.key][this.facetSelectionDateProperty]).toDate();
+        this.$.datePicker.date = moment(facetSelection[this.key][this.facetSelectionDateProperty]).toDate();
       }
     });
   </script>

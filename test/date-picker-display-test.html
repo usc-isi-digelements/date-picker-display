@@ -41,15 +41,14 @@ limitations under the License.
 
     setup(function(done) {
       element = fixture('date-picker-display-fixture');
-      flush(function() {
-        done();
-      });
+      flush(done);
     });
 
     test('properties are initialized correctly', function() {
       assert.isNull(element.date);
+      assert.isUndefined(element.facetKey);
       assert.equal(element.facetLabelFormat, 'MM/DD/YYYY');
-      assert.deepEqual(element.facetSelection, {});
+      assert.deepEqual(element.facets, {});
       assert.equal(element.key, 'beginDate');
       assert.equal(element.prefixLabel, 'From');
       assert.equal(element.dateIdentifier, 'begin');
@@ -64,13 +63,16 @@ limitations under the License.
       assert.isFalse(element.$.dateDialog.opened);
     });
 
-    test('facetSelection changes trigger _updateDisplay', function(done) {
-      element.facetSelection = {
-        'beginDate': {
-          text: '10/05/2015',
-          date: '2015-10-05T00:00:00',
-          enabled: true,
-          category: 'Begin Date'
+    test('facets changes trigger _updateDisplay', function(done) {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {
+          beginDate: {
+            text: '10/05/2015',
+            date: '2015-10-05T00:00:00',
+            enabled: true,
+            category: 'Begin Date'
+          }
         }
       };
       flush(function() {
@@ -81,24 +83,27 @@ limitations under the License.
     });
 
     test('formatDateToESString returns correct string value', function() {
-      var dateVal = new Date('August 30, 2016 12:15:05');
-      assert.equal(element.formatDateToESString(dateVal), '2016-08-30T00:00:00');
+      assert.equal(element.formatDateToESString('2016-08-30T12:15:05'), '2016-08-30T00:00:00');
+      assert.equal(element.formatDateToESString('August 30, 2016 12:15:05'), '2016-08-30T00:00:00');
     });
 
     test('formatDate returns correct string value', function() {
-      var dateVal = new Date('August 30, 2016 12:15:05');
-      assert.equal(element.formatDate(dateVal, 'MM/DD/YYYY'), '08/30/2016');
-      assert.equal(element.formatDate(dateVal, 'MMMM Do YYYY, h:mm:ss a'), 'August 30th 2016, 12:15:05 pm');
+      assert.equal(element.formatDate('2016-08-30T12:15:05', 'MM/DD/YYYY'), '08/30/2016');
+      assert.equal(element.formatDate('2016-08-30T12:15:05', 'MMMM Do YYYY, h:mm:ss a'), 'August 30th 2016, 12:15:05 pm');
+      assert.equal(element.formatDate('August 30, 2016 12:15:05', 'MM/DD/YYYY'), '08/30/2016');
+      assert.equal(element.formatDate('August 30, 2016 12:15:05', 'MMMM Do YYYY, h:mm:ss a'), 'August 30th 2016, 12:15:05 pm');
     });
 
     test('_updateFacetSelection test', function() {
+      element.facetKey = 'dates';
       element.key = 'endDate';
       element.text =  '08/30/2016';
-      element.date = '2016-08-30T00:00:00';
+      element.date = '2016-08-30T04:00:00';
       element.title = 'End Date';
 
       element._updateFacetSelection('endDate');
-      assert.deepEqual(element.facetSelection.endDate, {
+
+      assert.deepEqual(element.facets.dates.endDate, {
         key: 'endDate',
         text: '08/30/2016',
         date: '2016-08-30T00:00:00',
@@ -107,7 +112,48 @@ limitations under the License.
       });
     });
 
+    test('_updateFacetSelection does work if facets is set', function() {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {
+          beginDate: {
+            key: 'beginDate',
+            text: '10/05/2015',
+            date: '2015-10-05T00:00:00',
+            enabled: true,
+            category: 'Begin Date'
+          }
+        }
+      };
+      element.key = 'endDate';
+      element.text =  '08/30/2016';
+      element.date = '2016-08-30T04:00:00';
+      element.title = 'End Date';
+
+      element._updateFacetSelection('endDate');
+
+      assert.deepEqual(element.facets, {
+        dates: {
+          beginDate: {
+            key: 'beginDate',
+            text: '10/05/2015',
+            date: '2015-10-05T00:00:00',
+            enabled: true,
+            category: 'Begin Date'
+          },
+          endDate: {
+            key: 'endDate',
+            text: '08/30/2016',
+            date: '2016-08-30T00:00:00',
+            enabled: true,
+            category: 'End Date'
+          }
+        }
+      });
+    });
+
     test('_updateFacetSelection if dateFacetStructure does not include required properties', function() {
+      element.facetKey = 'dates';
       element.key = 'endDate';
       element.text =  '08/30/2016';
       element.date = '2016-08-30T00:00:00';
@@ -122,7 +168,7 @@ limitations under the License.
 
       element._updateFacetSelection('endDate');
 
-      assert.deepEqual(element.facetSelection.endDate, {
+      assert.deepEqual(element.facets.dates.endDate, {
         key: 'endDate',
         date: '2016-08-30T00:00:00',
         enabled: true,
@@ -130,6 +176,7 @@ limitations under the License.
     });
 
     test('_updateFacetSelection if facetSelectionDateProperty and facetSelectionEnabledProperty are not set to defaults', function() {
+      element.facetKey = 'dates';
       element.key = 'endDate';
       element.text =  '08/30/2016';
       element.date = '2016-08-30T00:00:00';
@@ -138,7 +185,8 @@ limitations under the License.
       element.facetSelectionEnabledProperty = 'isTrue';
 
       element._updateFacetSelection('endDate');
-      assert.deepEqual(element.facetSelection.endDate, {
+
+      assert.deepEqual(element.facets.dates.endDate, {
         key: 'endDate',
         text: '08/30/2016',
         someDate: '2016-08-30T00:00:00',
@@ -163,6 +211,11 @@ limitations under the License.
     });
 
     test('_closeDateDialog does nothing if dialog not confirmed', function(done) {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {}
+      };
+
       var eventToPassIn = {
         detail: {
           confirmed: false
@@ -172,12 +225,19 @@ limitations under the License.
 
       flush(function() {
         assert.isNull(element.date);
-        assert.deepEqual(element.facetSelection, {});
+        assert.deepEqual(element.facets, {
+          dates: {}
+        });
         done();
       });
     });
 
     test('_closeDateDialog does nothing if date selections have not changed', function(done) {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {}
+      };
+
       element.date = new Date('October 5, 2015 12:15:05');
       element.$.datePicker.date = new Date('October 5, 2015 11:45:05');
       var eventToPassIn = {
@@ -190,12 +250,19 @@ limitations under the License.
 
       flush(function() {
         assert.deepEqual(element.date, new Date('October 5, 2015 12:15:05'));
-        assert.deepEqual(element.facetSelection, {});
+        assert.deepEqual(element.facets, {
+          dates: {}
+        });
         done();
       });
     });
 
-    test('_closeDateDialog updates date and facetSelection', function(done) {
+    test('_closeDateDialog updates date and facets', function(done) {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {}
+      };
+
       element.date = new Date('October 5, 2015 12:15:05');
       element.$.datePicker.date = new Date('October 11, 2015 12:45:05');
       var eventToPassIn = {
@@ -208,20 +275,27 @@ limitations under the License.
 
       flush(function() {
         assert.deepEqual(element.date, new Date('October 11, 2015'));
-        assert.deepEqual(element.facetSelection, {
-          'beginDate': {
-            text: '10/11/2015',
-            key: 'beginDate',
-            date: '2015-10-11T00:00:00',
-            enabled: true,
-            category: 'Begin Date'
+        assert.deepEqual(element.facets, {
+          dates: {
+            beginDate: {
+              text: '10/11/2015',
+              key: 'beginDate',
+              date: '2015-10-11T00:00:00',
+              enabled: true,
+              category: 'Begin Date'
+            }
           }
         });
         done();
       });
     });
 
-    test('_updateDisplay if facetSelection is empty', function(done) {
+    test('_updateDisplay if facets is empty', function(done) {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {}
+      };
+
       element.date = new Date('October 5, 2015 12:15:05');
 
       element._updateDisplay();
@@ -232,17 +306,21 @@ limitations under the License.
       });
     });
 
-    test('_updateDisplay if facetSelection is not empty', function(done) {
-      element.date = new Date('October 5, 2015 12:15:05');
-      element.facetSelection = {
-        'beginDate': {
-          key: 'beginDate',
-          text: '10/05/2015',
-          date: '2015-10-05T00:00:00',
-          enabled: false,
-          category: 'Begin Date'
+    test('_updateDisplay if facets is not empty', function(done) {
+      element.facetKey = 'dates';
+      element.facets = {
+        dates: {
+          beginDate: {
+            key: 'beginDate',
+            text: '10/05/2015',
+            date: '2015-10-05T00:00:00',
+            enabled: false,
+            category: 'Begin Date'
+          }
         }
       };
+
+      element.date = new Date('October 5, 2015 12:15:05');
 
       element._updateDisplay();
 

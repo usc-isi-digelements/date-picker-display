@@ -29,22 +29,24 @@ limitations under the License.
     <div>
       <p>date-picker-display demo (used along with selected-facets-display):</p>
 
-      <p>Key: 'dates'</p>
-      <p>Identifier: 'this'</p>
-      <p>Title: 'Date'</p>
-      <p>Prefix Label: 'Date'</p>
+      <p>Key: 'dateStart'</p>
+      <p>Identifier: 'start'</p>
+      <p>Title: 'Date From'</p>
+      <p>Prefix Label: 'From'</p>
 
       <p>Selected Facets:
-      <span>{{displayEmpty(facetSelection.*)}}</span>
+      <span>[[displayEmpty(facets.*)]]</span>
       <selected-facets-display
-        facet-selection="{{facetSelection}}">
+        facet-key="dates"
+        facets="{{facets}}">
       </selected-facets-display></p>
 
       <br/><br/>
 
       <date-picker-display
         style="width: 200px;"
-        facet-selection="{{facetSelection}}"
+        facet-key="dates"
+        facets="{{facets}}"
         key="[[dateKey]]"
         title="[[dateTitle]]"
         prefix-label="[[datePrefixLabel]]"
@@ -56,15 +58,17 @@ limitations under the License.
     (function(document) {
       var demo = document.querySelector('#demo');
 
-      demo.facetSelection = {};
-      demo.dateKey = 'dates';
-      demo.dateIdentifier = 'this';
-      demo.dateTitle = 'Date';
-      demo.datePrefixLabel = 'Date';
+      demo.facets = {
+        dates: {}
+      };
+      demo.dateKey = 'dateStart';
+      demo.dateIdentifier = 'start';
+      demo.dateTitle = 'Date From';
+      demo.datePrefixLabel = 'From';
 
       demo.displayEmpty = function() {
-        if(!Object.keys(demo.facetSelection).length ||
-          (demo.facetSelection[demo.dateKey] && !demo.facetSelection[demo.dateKey].enabled)) {
+        if(!Object.keys(demo.facets).length ||
+          (demo.facets[demo.dateKey] && !demo.facets[demo.dateKey].enabled)) {
           return 'None';
         }
       };
