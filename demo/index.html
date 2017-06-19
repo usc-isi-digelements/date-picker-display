@@ -67,8 +67,8 @@ limitations under the License.
       demo.datePrefixLabel = 'From';
 
       demo.displayEmpty = function() {
-        if(!Object.keys(demo.facets).length ||
-          (demo.facets[demo.dateKey] && !demo.facets[demo.dateKey].enabled)) {
+        if(!Object.keys(demo.facets.dates).length ||
+          (demo.facets.dates[demo.dateKey] && !demo.facets.dates[demo.dateKey].enabled)) {
           return 'None';
         }
       };
