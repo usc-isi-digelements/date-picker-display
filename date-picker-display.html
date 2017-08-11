@@ -101,7 +101,7 @@ To style the popup with the date picker, use the styling options supported by Po
         <span>[[_buttonLabel]]</span>
       </paper-button>
       <paper-dialog id="dateDialog" class="paper-date-picker-dialog" modal on-iron-overlay-closed="_closeDateDialog">
-        <paper-date-picker id="datePicker" heading-format="MMMM Do" force-narrow></paper-date-picker>
+        <paper-date-picker id="datePicker" heading-format="MMMM Do" force-narrow max-date="[[maxDate]]" min-date="[[minDate]]"></paper-date-picker>
         <div class="buttons">
           <paper-button dialog-dismiss>Cancel</paper-button>
           <paper-button dialog-confirm>OK</paper-button>
@@ -271,6 +271,36 @@ To style the popup with the date picker, use the styling options supported by Po
         facetSelectionEnabledProperty: {
           type: String,
           value: 'enabled'
+        },
+
+        /**
+         * (Optional)
+         *
+         * The maximum selectable date.
+         *
+         * @type {Date}
+         * @default Now
+         */
+        maxDate: {
+          type: Date,
+          value: function() {
+            return new Date();
+          }
+        },
+
+        /**
+         * (Optional)
+         *
+         * The minumum selectable date.
+         *
+         * @type {Date}
+         * @default Jan. 1, 2000
+         */
+        minDate: {
+          type: Date,
+          value: function() {
+            return new Date(2000, 0, 1);
+          }
         },
 
         /**
