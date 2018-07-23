@@ -4,7 +4,7 @@ The following software licenses apply to the listed third-party dependencies:
 
 ### BSD 3-Clause
 
-[License](https://github.com/DigElements/date-picker-display/blob/master/THIRD-PARTY-LICENSES/BSD-3-CLAUSE)
+[License](https://github.com/usc-isi-digelements/date-picker-display/blob/master/THIRD-PARTY-LICENSES/BSD-3-CLAUSE)
 
 #### iron-elements
 - Copyright (c) 2016 The Polymer Project Authors
@@ -28,7 +28,7 @@ The following software licenses apply to the listed third-party dependencies:
 
 ### MIT
 
-[License](https://github.com/DigElements/date-picker-display/blob/master/THIRD-PARTY-LICENSES/MIT)
+[License](https://github.com/usc-isi-digelements/date-picker-display/blob/master/THIRD-PARTY-LICENSES/MIT)
 
 #### lodash
 - Copyright JS Foundation and other contributors <https://js.foundation/>

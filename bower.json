@@ -1,27 +1,20 @@
 {
   "name": "date-picker-display",
-  "description": "A Polymer Element that displays a date picker used for filtering (uses paper-date-picker).",
+  "description":
+    "A Polymer Element that displays a date picker used for filtering (uses paper-date-picker).",
   "version": "1.1.1",
-  "authors": [
-    "Next Century Corporation"
-  ],
+  "authors": ["Next Century Corporation"],
   "license": "Apache-2.0",
-  "keywords": [
-    "web-component",
-    "polymer"
-  ],
+  "keywords": ["web-component", "polymer"],
   "main": "date-picker-display.html",
-  "homepage": "https://github.com/DigElements/date-picker-display/",
-  "ignore": [
-    "/.*",
-    "/test/"
-  ],
+  "homepage": "https://github.com/usc-isi-digelements/date-picker-display/",
+  "ignore": ["/.*", "/test/"],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.7.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.3.1",
     "iron-icons": "PolymerElements/iron-icons#^1.2.0",
     "iron-icon": "PolymerElements/iron-icon#^1.0.12",
-    "lodash-import": "DigElements/lodash-import#~1.0.1",
+    "lodash-import": "usc-isi-digelements/lodash-import#~1.0.1",
     "paper-button": "PolymerElements/paper-button#^1.0.14",
     "paper-date-picker": "polymer-paper-date-picker#~1.1.4",
     "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
@@ -29,7 +22,8 @@
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.1.7",
-    "selected-facets-display": "DigElements/selected-facets-display#^1.0.12",
+    "selected-facets-display":
+      "usc-isi-digelements/selected-facets-display#^1.0.12",
     "web-component-tester": "^5.0.0"
   },
   "resolutions": {
